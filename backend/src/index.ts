@@ -6,20 +6,19 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
 
 import {login} from "./routers/auth";
 
-
 const app = new Elysia()
-    .use(
-        opentelemetry({
-            spanProcessors: [
-                new BatchSpanProcessor(
-                    new OTLPTraceExporter()
-                )
-            ]
-        })
-    )
+    // .use(
+    //     opentelemetry({
+    //         spanProcessors: [
+    //             new BatchSpanProcessor(
+    //                 new OTLPTraceExporter()
+    //             )
+    //         ]
+    //     })
+    // )
     .use(swagger())
     .use(login)
-    .listen(3000);
+    .listen(Number(process.env.PORT));
 
 console.log(
   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`

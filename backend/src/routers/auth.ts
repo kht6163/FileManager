@@ -13,8 +13,6 @@ export const login = new Elysia({
         console.log('id :', id, !id, !!id);
         console.log('pwd :', pwd, !pwd, !!pwd);
 
-
-
         return {token: 'test'}
     }, {
         body: t.Object({
