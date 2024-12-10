@@ -1,1 +1,6 @@
 /.idea/
+/backend/.env
+/backend/bun.lockb
+/frontend/bun.lockb
+/backend/node_modules/
+/frontend/node_modules/
