@@ -1,37 +1,67 @@
 import {Elysia, t} from "elysia";
+import {jwt} from "@elysiajs/jwt";
+import {pgPool} from "../utils/postgres";
+import Bun from "bun";
 
-class LoginItem {
-    constructor(public id: string, public pwd: string) {
-    }
-}
+const JWT_EXPIRY = 7 * 86400; // 7일
+const hasher: Bun.CryptoHasher = new Bun.CryptoHasher("sha256")
 
 export const login = new Elysia({
     prefix: '/api/auth',
     tags: ['auth']
 })
-    .post('/login', ({body: {id, pwd}, error}) => {
-        console.log('id :', id, !id, !!id);
-        console.log('pwd :', pwd, !pwd, !!pwd);
+    .use(pgPool)
+    .use(
+        jwt({
+            name: 'jwt',
+            secret: process.env.JWT_SECRETS || 'defaultSecret'
+        })
+    )
+    .post('/login', async function login({body: {id, pwd}, pgPool, error, jwt, cookie: {access, refresh}}) {
+        const conn = await pgPool.getPool();
+        
+        const result = await conn.query(
+            'SELECT id FROM users WHERE id = $1 AND pwd = $2',
+            [id, hasher.update(pwd).digest('hex')]
+        );
 
-        return {token: 'test'}
+        const token = await jwt.sign({ 
+            id: result.rows[0].id,
+            exp: Math.floor(Date.now() / 1000) + JWT_EXPIRY
+        });
+
+        const cookieOptions = {
+            httpOnly: true,
+            maxAge: JWT_EXPIRY,
+            secure: process.env.NODE_ENV === 'production'
+        };
+
+        access.set({ value: token, ...cookieOptions });
+        refresh.set({ value: token, ...cookieOptions });
+
+        return 'success';
     }, {
         body: t.Object({
             id: t.String({
                 minLength: 1,
-                description: 'user id'
+                description: 'user id',
+                examples: ['admin']
             }),
             pwd: t.String({
                 minLength: 1,
-                description: 'user password'
+                description: 'user password',
+                examples: ['admin']
             })
         }),
         detail: {
             summary: 'login',
         },
         response: {
-            200: t.Object({
-                token: t.String()
-            }),
+            200: t.String(
+                {
+                    examples: ['success'],
+                    description: 'success'
+                }),
             400: t.Object({
                 error: t.String()
             })
