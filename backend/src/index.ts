@@ -1,10 +1,9 @@
-import {Elysia} from "elysia";
-import {swagger} from '@elysiajs/swagger'
-import {opentelemetry} from '@elysiajs/opentelemetry'
-import {BatchSpanProcessor} from '@opentelemetry/sdk-trace-node'
-import {OTLPTraceExporter} from '@opentelemetry/exporter-trace-otlp-proto'
-
-import {login} from "./routers/auth";
+import { Elysia } from "elysia";
+import { swagger } from '@elysiajs/swagger'
+import { opentelemetry } from '@elysiajs/opentelemetry'
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
+import { authPlugin } from "./routers/auth/plugin";
 
 const app = new Elysia()
     // .use(
@@ -16,9 +15,9 @@ const app = new Elysia()
     //         ]
     //     })
     // )
-    .use(opentelemetry({serviceName: 'FileManager'}))
+    // .use(opentelemetry({ serviceName: 'FileManager' }))
     .use(swagger())
-    .use(login)
+    .use(authPlugin)
     .listen(Number(process.env.PORT));
 
 console.log(
