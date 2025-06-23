@@ -1,0 +1,11 @@
+/**/__pycache__/
+.DS_Store
+app/node_modules/
+**/package-lock.json
+app/Dockerfile
+app/.dockerignore
+**/.env
+
+# React Router
+app/.react-router/
+app/build/
